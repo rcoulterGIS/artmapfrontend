@@ -24,8 +24,8 @@ function App() {
   const [artworks, setArtworks] = useState([]);
 
   useEffect(() => {
-    // Fetch artworks data from your API
-    fetch('https://artmap-backend-85d5bd8d0796.herokuapp.com/artworks')
+    // Fetch artworks data from your API using the environment variable
+    fetch(`${process.env.REACT_APP_API_URL}/artworks`)
       .then(response => response.json())
       .then(data => setArtworks(data))
       .catch(error => console.error('Error fetching artworks:', error));
@@ -40,15 +40,17 @@ function App() {
       {artworks.map((artwork, index) => (
         <Marker key={index} position={[artwork.latitude, artwork.longitude]}>
           <Popup>
-            <b>{artwork.station_name}</b><br />
-            <b>Art Installation:</b><br />
-            Title: {artwork.art_title}<br />
-            Artist: {artwork.artist}<br />
-            Date: {artwork.art_date}<br />
-            Material: {artwork.art_material}<br />
-            {artwork.art_image_link && artwork.art_image_link.url && (
-              <a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Information</a>
-            )}
+            <div>
+              <h3 style={{ fontWeight: 'bold' }}>{artwork.art_title}</h3>
+              <p>Artist: {artwork.artist}</p>
+              <p>Year: {artwork.art_date}</p>
+              <p>Material: {artwork.art_material}</p>
+              <p>Station: {artwork.station_name}</p>
+              <p>Description: {artwork.art_description}</p>
+              {artwork.art_image_link && artwork.art_image_link.url && (
+                <p><a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Information</a></p>
+              )}
+            </div>
           </Popup>
         </Marker>
       ))}
