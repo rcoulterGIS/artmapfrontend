@@ -22,39 +22,70 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 function App() {
   const [artworks, setArtworks] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    const apiUrl = process.env.REACT_APP_API_URL;
+    console.log('API URL:', apiUrl); // Log the API URL
+
+    if (!apiUrl) {
+      setError('API URL is not defined. Check your environment variables.');
+      return;
+    }
+
     // Fetch artworks data from your API using the environment variable
-    fetch(`${process.env.REACT_APP_API_URL}/artworks`)
-      .then(response => response.json())
-      .then(data => setArtworks(data))
-      .catch(error => console.error('Error fetching artworks:', error));
+    fetch(`${apiUrl}/artworks`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fetched data:', data); // Log the fetched data
+        setArtworks(data);
+      })
+      .catch(error => {
+        console.error('Error fetching artworks:', error);
+        setError(error.message);
+      });
   }, []);
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
-    <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }}>
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      {artworks.map((artwork, index) => (
-        <Marker key={index} position={[artwork.latitude, artwork.longitude]}>
-          <Popup>
-            <div>
-              <h3 style={{ fontWeight: 'bold' }}>{artwork.art_title}</h3>
-              <p>Artist: {artwork.artist}</p>
-              <p>Year: {artwork.art_date}</p>
-              <p>Material: {artwork.art_material}</p>
-              <p>Station: {artwork.station_name}</p>
-              <p>Description: {artwork.art_description}</p>
-              {artwork.art_image_link && artwork.art_image_link.url && (
-                <p><a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Information</a></p>
-              )}
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div>
+      <h1>NYC Subway Art Map</h1>
+      {artworks.length === 0 ? (
+        <p>Loading artworks...</p>
+      ) : (
+        <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '90vh', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          {artworks.map((artwork, index) => (
+            <Marker key={index} position={[artwork.latitude, artwork.longitude]}>
+              <Popup>
+                <div>
+                  <h3 style={{ fontWeight: 'bold' }}>{artwork.art_title}</h3>
+                  <p>Artist: {artwork.artist}</p>
+                  <p>Year: {artwork.art_date}</p>
+                  <p>Material: {artwork.art_material}</p>
+                  <p>Station: {artwork.station_name}</p>
+                  <p>Description: {artwork.art_description}</p>
+                  {artwork.art_image_link && artwork.art_image_link.url && (
+                    <p><a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Information</a></p>
+                  )}
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+    </div>
   );
 }
 
