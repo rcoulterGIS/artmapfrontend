@@ -1,23 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import axios from 'axios';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-const API_URL = 'https://artmap-backend-85d5bd8d0796.herokuapp.com/artworks';
+// Import the marker icon images
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Create a custom icon
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Set the custom icon as the default icon for all markers
+L.Marker.prototype.options.icon = DefaultIcon;
 
 function App() {
   const [artworks, setArtworks] = useState([]);
 
   useEffect(() => {
-    const fetchArtworks = async () => {
-      try {
-        const response = await axios.get(API_URL);
-        setArtworks(response.data);
-      } catch (error) {
-        console.error('Error fetching artworks:', error);
-      }
-    };
-
-    fetchArtworks();
+    // Fetch artworks data from your API
+    fetch('https://artmap-backend-85d5bd8d0796.herokuapp.com/artworks')
+      .then(response => response.json())
+      .then(data => setArtworks(data))
+      .catch(error => console.error('Error fetching artworks:', error));
   }, []);
 
   return (
@@ -38,13 +49,6 @@ function App() {
             {artwork.art_image_link && artwork.art_image_link.url && (
               <a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Information</a>
             )}
-            <br /><br />
-            <b>Related Stations:</b><br />
-            {artwork.related_stations.map((station, idx) => (
-              <span key={idx}>
-                {station.station_id}: {station.line} ({station.borough})<br />
-              </span>
-            ))}
           </Popup>
         </Marker>
       ))}
