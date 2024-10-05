@@ -17,9 +17,22 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '18'
-    - name: Install dependencies
-      run: |
-        npm ci
-    - name: Run tests
+    - name: Debug Environment
       run: |
         echo "REACT_APP_API_URL is set to: $REACT_APP_API_URL"
+        if [ -z "$REACT_APP_API_URL" ]; then
+          echo "REACT_APP_API_URL is empty or not set"
+        else
+          echo "REACT_APP_API_URL is set (value hidden for security)"
+        fi
+    - name: Check Secret Availability
+      run: |
+        if [ "${{ secrets.REACT_APP_API_URL }}" ]; then
+          echo "Secret REACT_APP_API_URL exists in GitHub"
+        else
+          echo "Secret REACT_APP_API_URL does not exist in GitHub"
+        fi
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm test
