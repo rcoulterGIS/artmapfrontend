@@ -9,8 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: myenvironment
-    secrets: inherit # <= this one
     env:
       REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
     steps:
