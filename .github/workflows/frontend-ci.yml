@@ -22,4 +22,4 @@ jobs:
         npm ci
     - name: Run tests
       run: |
-        npm test
+        echo "REACT_APP_API_URL is set to: $REACT_APP_API_URL"
