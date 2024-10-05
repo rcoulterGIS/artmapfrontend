@@ -22,7 +22,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 // Styles for the scrollable popup content
 const popupContentStyle = {
-  maxHeight: '500px', // Set your desired maximum height here
+  maxHeight: '500px', 
   overflowY: 'auto',
   padding: '10px'
 };
