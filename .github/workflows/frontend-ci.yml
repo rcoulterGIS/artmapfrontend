@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     environment: myenvironment
+    secrets: inherit # <= this one
     env:
       REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
     steps:
@@ -18,8 +19,6 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '18'
-      
-      secrets: inherit # <= this one
     - name: Debug Environment
       run: |
         echo "REACT_APP_API_URL is set to: $REACT_APP_API_URL"
