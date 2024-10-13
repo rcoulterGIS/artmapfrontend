@@ -3,13 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.7",
+    "d3": "^7.9.0",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
+    "react-leaflet-cluster": "^2.1.0",
+    "react-leaflet-markercluster": "^2.0.0",
     "react-scripts": "5.0.1",
+    "styled-components": "^6.1.13",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -40,14 +43,15 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.0.1"
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2"
   },
   "jest": {
     "transform": {
       "^.+\\.(js|jsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "/node_modules/(?!react-leaflet|@react-leaflet|leaflet)"
+      "node_modules/(?!(punycode)/)"
     ]
   }
 }

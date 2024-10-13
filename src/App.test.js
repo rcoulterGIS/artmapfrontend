@@ -1,118 +1,161 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { act } from 'react-dom/test-utils';
+import { render, screen, waitFor, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import '@testing-library/jest-dom';
+import ArtMap from './App';
 
 // Mock the leaflet library
-jest.mock('leaflet', () => ({
-  icon: jest.fn(),
-  Marker: { prototype: { options: { icon: {} } } },
-}));
-
-// Mock react-leaflet components
 jest.mock('react-leaflet', () => ({
-  MapContainer: ({ children }) => <div data-testid="map">{children}</div>,
+  MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
   TileLayer: () => <div data-testid="tile-layer" />,
-  Marker: ({ children }) => <div data-testid="marker">{children}</div>,
+  CircleMarker: ({ children }) => <div data-testid="circle-marker">{children}</div>,
   Popup: ({ children }) => <div data-testid="popup">{children}</div>,
 }));
 
-// Import App after all mocks are set up
-import App from './App';
+// Mock the fetch function
+global.fetch = jest.fn();
 
-describe('App Component', () => {
-  const mockArtworks = [
-    {
-      latitude: 40.7128,
-      longitude: -74.006,
-      art_title: 'Test Artwork',
-      artist: 'Test Artist',
-      art_date: '2021',
-      art_material: 'Test Material',
-      station_name: 'Test Station',
-      art_description: 'Test Description',
-      art_image_link: { url: 'http://example.com' },
-    },
-  ];
+const mockArtworks = [
+  {
+    art_id: '1',
+    station_name: 'Test Station 1',
+    art_title: 'Artwork 1',
+    artist: 'Artist 1',
+    art_date: '2021',
+    art_material: 'Oil on canvas',
+    art_description: 'A beautiful painting',
+    art_image_link: { url: 'https://example.com/image1.jpg' },
+    latitude: 40.7128,
+    longitude: -74.0060,
+  },
+  {
+    art_id: '2',
+    station_name: 'Test Station 1',
+    art_title: 'Artwork 2',
+    artist: 'Artist 2',
+    art_date: '2022',
+    art_material: 'Sculpture',
+    art_description: 'An impressive sculpture',
+    art_image_link: { url: 'https://example.com/image2.jpg' },
+    latitude: 40.7128,
+    longitude: -74.0060,
+  },
+];
+
+describe('ArtMap Component', () => {
+  let originalError;
 
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.clearAllMocks();
+    fetch.mockClear();
+    process.env.REACT_APP_API_URL = 'http://test-api.com';
+    // Store the original console.error
+    originalError = console.error;
+    // Mock console.error to suppress specific messages
+    console.error = jest.fn();
   });
 
   afterEach(() => {
-    console.log.mockRestore();
-    console.error.mockRestore();
-    jest.resetAllMocks();
+    // Restore the original console.error after each test
+    console.error = originalError;
   });
 
-  test('renders loading state initially', () => {
-    render(<App />);
-    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  it('renders the map container and fetches artwork data', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockArtworks,
+    });
+
+    await act(async () => {
+      render(<ArtMap />);
+    });
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('map-container')).toBeInTheDocument();
+      expect(screen.getByTestId('tile-layer')).toBeInTheDocument();
+      expect(screen.getByTestId('circle-marker')).toBeInTheDocument();
+      expect(screen.getByTestId('popup')).toBeInTheDocument();
+    });
   });
 
-  test('renders error state when API URL is not defined', async () => {
+  it('displays an error message when API URL is not defined', async () => {
     delete process.env.REACT_APP_API_URL;
-    render(<App />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Error')).toBeInTheDocument();
-      expect(screen.getByText('API URL is not defined. Check your environment variables.')).toBeInTheDocument();
-    });
-  });
-
-  test('renders error state when fetch fails', async () => {
-    process.env.REACT_APP_API_URL = 'http://example.com';
-    global.fetch = jest.fn(() => Promise.reject(new Error('Fetch failed')));
-
-    render(<App />);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Error')).toBeInTheDocument();
-      expect(screen.getByText('Failed to fetch artworks: Fetch failed. Please check the API URL and try again.')).toBeInTheDocument();
-    });
-  });
-
-  test('renders map and markers when fetch succeeds', async () => {
-    process.env.REACT_APP_API_URL = 'http://example.com';
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockArtworks),
-      })
-    );
 
     await act(async () => {
-      render(<App />);
+      render(<ArtMap />);
     });
-
-    expect(screen.getByText('NYC Subway Art Map')).toBeInTheDocument();
     
-    // Check if MapContainer was rendered
-    expect(screen.getByTestId('map')).toBeInTheDocument();
-    
-    // Check for the presence of artwork information
-    expect(screen.getByText('Test Artwork')).toBeInTheDocument();
-    expect(screen.getByText('Artist: Test Artist')).toBeInTheDocument();
-
-    // Check if at least one marker and popup were rendered
-    expect(screen.getByTestId('marker')).toBeInTheDocument();
-    expect(screen.getByTestId('popup')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('error')).toHaveTextContent('Error: API URL is not defined');
+    });
   });
 
-  test('renders no artworks found message when API returns empty array', async () => {
-    process.env.REACT_APP_API_URL = 'http://example.com';
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([]),
-      })
-    );
+  it('displays an error message when fetch fails', async () => {
+    fetch.mockRejectedValueOnce(new Error('Fetch failed'));
 
     await act(async () => {
-      render(<App />);
+      render(<ArtMap />);
+    });
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('error')).toHaveTextContent('Error: Error fetching artwork data');
     });
 
-    expect(screen.getByText('No artworks found. The API might be empty or returning an empty array.')).toBeInTheDocument();
+    // Check if console.error was called with the expected message
+    expect(console.error).toHaveBeenCalledWith('Error fetching artwork data:', expect.any(Error));
+  });
+
+  it('displays multiple artworks for a station', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockArtworks,
+    });
+
+    await act(async () => {
+      render(<ArtMap />);
+    });
+    
+    await waitFor(() => {
+      const popup = screen.getByTestId('popup');
+      expect(popup).toHaveTextContent('Test Station 1');
+      expect(popup).toHaveTextContent('Total Artworks: 2');
+      expect(popup).toHaveTextContent('Artwork 1 by Artist 1');
+      expect(popup).toHaveTextContent('Artwork 2 by Artist 2');
+    });
+  });
+
+  it('allows navigation between artwork list and individual artwork details', async () => {
+    const user = userEvent.setup();
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockArtworks,
+    });
+
+    await act(async () => {
+      render(<ArtMap />);
+    });
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('popup')).toHaveTextContent('Test Station 1');
+    });
+
+    // Click on the first artwork
+    await user.click(screen.getByText('Artwork 1 by Artist 1'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Artwork 1')).toBeInTheDocument();
+      expect(screen.getByText('Artist: Artist 1')).toBeInTheDocument();
+      expect(screen.getByText('Date: 2021')).toBeInTheDocument();
+      expect(screen.getByText('Material: Oil on canvas')).toBeInTheDocument();
+      expect(screen.getByText('A beautiful painting')).toBeInTheDocument();
+      expect(screen.getByText('More Info')).toHaveAttribute('href', 'https://example.com/image1.jpg');
+    });
+
+    // Go back to the list
+    await user.click(screen.getByText('< Back to list'));
+
+    await waitFor(() => {
+      expect(screen.getByText('Test Station 1')).toBeInTheDocument();
+      expect(screen.getByText('Total Artworks: 2')).toBeInTheDocument();
+    });
   });
 });
