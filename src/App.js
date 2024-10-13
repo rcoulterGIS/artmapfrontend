@@ -43,10 +43,14 @@ const StyledPopupContent = styled.div`
     margin-bottom: 5px;
   }
   
-  a {
+  button {
+    background: none;
+    border: none;
     color: blue;
     text-decoration: none;
     cursor: pointer;
+    padding: 0;
+    font: inherit;
     
     &:hover {
       text-decoration: underline;
@@ -121,13 +125,15 @@ const ArtMap = () => {
     if (selectedArtwork) {
       return (
         <StyledPopupContent>
-          <a onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setSelectedArtwork(null);
-          }}>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSelectedArtwork(null);
+            }}
+          >
             &lt; Back to list
-          </a>
+          </button>
           <SingleArtworkContent artwork={selectedArtwork} />
         </StyledPopupContent>
       );
@@ -140,16 +146,15 @@ const ArtMap = () => {
         <ul>
           {artworks.map(artwork => (
             <li key={artwork.art_id}>
-              <a onClick={(e) => handleArtworkClick(e, artwork)}>
+              <button onClick={(e) => handleArtworkClick(e, artwork)}>
                 {artwork.art_title} by {artwork.artist}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
       </StyledPopupContent>
     );
   };
-
 
   const ArtworkPopup = ({ artworks }) => {
     if (artworks.length === 1) {
