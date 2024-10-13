@@ -6,8 +6,8 @@
     "axios": "^1.7.7",
     "d3": "^7.9.0",
     "leaflet": "^1.9.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
     "react-leaflet-cluster": "^2.1.0",
     "react-leaflet-markercluster": "^2.0.0",
@@ -43,7 +43,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.0.1",
+    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.5.2"
   },
   "jest": {
@@ -51,7 +51,7 @@
       "^.+\\.(js|jsx)$": "babel-jest"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!(punycode)/)"
+      "node_modules/(?!(leaflet|react-leaflet)/)"
     ]
   }
 }

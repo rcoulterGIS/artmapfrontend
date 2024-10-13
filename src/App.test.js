@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
-import ArtMap from './App';
+import App from './App';
 
 // Mock the leaflet library
 jest.mock('react-leaflet', () => ({
@@ -10,6 +10,7 @@ jest.mock('react-leaflet', () => ({
   TileLayer: () => <div data-testid="tile-layer" />,
   CircleMarker: ({ children }) => <div data-testid="circle-marker">{children}</div>,
   Popup: ({ children }) => <div data-testid="popup">{children}</div>,
+  useMap: () => ({ setView: jest.fn() }),
 }));
 
 // Mock the fetch function
@@ -66,7 +67,7 @@ describe('ArtMap Component', () => {
     });
 
     await act(async () => {
-      render(<ArtMap />);
+      render(<App />);
     });
     
     await waitFor(() => {
@@ -81,7 +82,7 @@ describe('ArtMap Component', () => {
     delete process.env.REACT_APP_API_URL;
 
     await act(async () => {
-      render(<ArtMap />);
+      render(<App />);
     });
     
     await waitFor(() => {
@@ -93,7 +94,7 @@ describe('ArtMap Component', () => {
     fetch.mockRejectedValueOnce(new Error('Fetch failed'));
 
     await act(async () => {
-      render(<ArtMap />);
+      render(<App />);
     });
     
     await waitFor(() => {
@@ -111,7 +112,7 @@ describe('ArtMap Component', () => {
     });
 
     await act(async () => {
-      render(<ArtMap />);
+      render(<App />);
     });
     
     await waitFor(() => {
@@ -131,7 +132,7 @@ describe('ArtMap Component', () => {
     });
 
     await act(async () => {
-      render(<ArtMap />);
+      render(<App />);
     });
     
     await waitFor(() => {

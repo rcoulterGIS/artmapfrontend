@@ -201,4 +201,5 @@ const ArtMap = () => {
   );
 };
 
-export default ArtMap;
+const App = () => <ArtMap />;
+export default App;
