@@ -237,7 +237,6 @@ const SubwayLines = () => {
         <Popup>
           <StyledPopupContent>
             <h3>Line: {line.name}</h3>
-            <p>Route Symbol: {line.rt_symbol}</p>
             <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
           </StyledPopupContent>
         </Popup>

@@ -153,9 +153,7 @@ describe('ArtMap Component', () => {
       const subwayPopups = popups.filter(popup => within(popup).queryByText(/^Line:/));
       expect(subwayPopups).toHaveLength(2);
       expect(within(subwayPopups[0]).getByText('Line: A')).toBeInTheDocument();
-      expect(within(subwayPopups[0]).getByText('Route Symbol: A')).toBeInTheDocument();
       expect(within(subwayPopups[1]).getByText('Line: B')).toBeInTheDocument();
-      expect(within(subwayPopups[1]).getByText('Route Symbol: B')).toBeInTheDocument();
     });
   });
 
