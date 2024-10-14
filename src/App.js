@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import styled, { createGlobalStyle } from 'styled-components';
 
@@ -73,10 +73,22 @@ const StyledPopupContent = styled.div`
   }
 `;
 
+const PanToMarker = ({ center }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center) {
+      map.setView(center, 14, { animate: true });
+    }
+  }, [center, map]);
+
+  return null;
+};
 
 const ArtMap = () => {
   const [artworks, setArtworks] = useState([]);
   const [error, setError] = useState(null);
+  const [selectedCenter, setSelectedCenter] = useState(null);
 
   useEffect(() => {
     const fetchArtworks = async () => {
@@ -111,6 +123,10 @@ const ArtMap = () => {
       return acc;
     }, {});
   }, [artworks]);
+
+  const handleMarkerClick = useCallback((lat, lng) => {
+    setSelectedCenter([lat, lng]);
+  }, []);
 
   const SingleArtworkContent = ({ artwork }) => (
     <StyledPopupContent>
@@ -184,6 +200,7 @@ const ArtMap = () => {
       <GlobalStyle />
       <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }} data-testid="map-container">
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" data-testid="tile-layer" />
+        <PanToMarker center={selectedCenter} />
         
         {Object.entries(groupedArtworks).map(([stationName, stationArtworks]) => {
           const center = stationArtworks.reduce(
@@ -206,6 +223,9 @@ const ArtMap = () => {
               opacity={1}
               fillOpacity={0.8}
               data-testid="circle-marker"
+              eventHandlers={{
+                click: () => handleMarkerClick(center[0], center[1])
+              }}
             >
               <Popup data-testid="popup">
                 <ArtworkPopup artworks={stationArtworks} />
