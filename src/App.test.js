@@ -5,12 +5,17 @@ import '@testing-library/jest-dom';
 import App from './App';
 
 // Mock the leaflet library
+const mockSetView = jest.fn();
 jest.mock('react-leaflet', () => ({
   MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
   TileLayer: () => <div data-testid="tile-layer" />,
-  CircleMarker: ({ children }) => <div data-testid="circle-marker">{children}</div>,
+  CircleMarker: ({ children, eventHandlers, center }) => (
+    <div data-testid="circle-marker" onClick={() => eventHandlers.click()} data-center={JSON.stringify(center)}>
+      {children}
+    </div>
+  ),
   Popup: ({ children }) => <div data-testid="popup">{children}</div>,
-  useMap: () => ({ setView: jest.fn() }),
+  useMap: () => ({ setView: mockSetView }),
 }));
 
 // Mock the fetch function
@@ -48,6 +53,7 @@ describe('ArtMap Component', () => {
 
   beforeEach(() => {
     fetch.mockClear();
+    mockSetView.mockClear();
     process.env.REACT_APP_API_URL = 'http://test-api.com';
     // Store the original console.error
     originalError = console.error;
@@ -157,6 +163,32 @@ describe('ArtMap Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Test Station 1')).toBeInTheDocument();
       expect(screen.getByText('Total Artworks: 2')).toBeInTheDocument();
+    });
+  });
+
+  it('pans and zooms to the selected marker when clicked', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockArtworks,
+    });
+
+    await act(async () => {
+      render(<App />);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('circle-marker')).toBeInTheDocument();
+    });
+
+    // Click on the marker
+    await act(async () => {
+      userEvent.click(screen.getByTestId('circle-marker'));
+    });
+
+    // Wait for any state updates to complete
+    await waitFor(() => {
+      // Check if setView was called with the correct parameters
+      expect(mockSetView).toHaveBeenCalledWith([40.7128, -74.0060], 14, { animate: true });
     });
   });
 });
