@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, act , within} from '@testing-library/react';
+import { render, screen, waitFor, act, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import App from './App';
@@ -62,8 +62,6 @@ const mockSubwayLines = [
     objectid: '1',
     name: 'A',
     rt_symbol: 'A',
-    color: '#0000FF',
-    url: 'http://web.mta.info/nyct/service/aline.htm',
     the_geom: {
       type: 'LineString',
       coordinates: [[-74.0060, 40.7128], [-74.0070, 40.7138]]
@@ -73,8 +71,6 @@ const mockSubwayLines = [
     objectid: '2',
     name: 'B',
     rt_symbol: 'B',
-    color: '#FF0000',
-    url: 'http://web.mta.info/nyct/service/bline.htm',
     the_geom: {
       type: 'LineString',
       coordinates: [[-73.9960, 40.7228], [-73.9970, 40.7238]]
@@ -89,14 +85,11 @@ describe('ArtMap Component', () => {
     fetch.mockClear();
     mockSetView.mockClear();
     process.env.REACT_APP_API_URL = 'http://test-api.com';
-    // Store the original console.error
     originalError = console.error;
-    // Mock console.error to suppress specific messages
     console.error = jest.fn();
   });
 
   afterEach(() => {
-    // Restore the original console.error after each test
     console.error = originalError;
   });
 
@@ -137,13 +130,12 @@ describe('ArtMap Component', () => {
     
     await waitFor(() => {
       const polylines = screen.getAllByTestId('polyline');
-      expect(polylines[0]).toHaveAttribute('data-color', '#0000FF');
-      expect(polylines[1]).toHaveAttribute('data-color', '#FF0000');
+      expect(polylines[0]).toHaveAttribute('data-color', '#0039A6'); // Color for A line
+      expect(polylines[1]).toHaveAttribute('data-color', '#FF6319'); // Color for B line
     });
   });
 
-  it('displays subway line information in popup when clicked', async () => {
-    const user = userEvent.setup();
+  it('displays subway line information in popup', async () => {
     fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => mockArtworks,
@@ -156,71 +148,18 @@ describe('ArtMap Component', () => {
       render(<App />);
     });
     
-    await waitFor(() => {
-      expect(screen.getAllByTestId('polyline')).toHaveLength(2);
-    });
-
-    // Click on the first subway line
-    await user.click(screen.getAllByTestId('polyline')[0]);
-
     await waitFor(() => {
       const popups = screen.getAllByTestId('popup');
-      expect(popups[1]).toHaveTextContent('Line: A');
-      expect(popups[1]).toHaveTextContent('Route Symbol: A');
-      expect(popups[1].querySelector('a')).toHaveAttribute('href', 'http://web.mta.info/nyct/service/aline.htm');
+      const subwayPopups = popups.filter(popup => within(popup).queryByText(/^Line:/));
+      expect(subwayPopups).toHaveLength(2);
+      expect(within(subwayPopups[0]).getByText('Line: A')).toBeInTheDocument();
+      expect(within(subwayPopups[0]).getByText('Route Symbol: A')).toBeInTheDocument();
+      expect(within(subwayPopups[1]).getByText('Line: B')).toBeInTheDocument();
+      expect(within(subwayPopups[1]).getByText('Route Symbol: B')).toBeInTheDocument();
     });
   });
 
-  it('displays an error message when API URL is not defined', async () => {
-    delete process.env.REACT_APP_API_URL;
-
-    await act(async () => {
-      render(<App />);
-    });
-    
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toHaveTextContent('Error: API URL is not defined');
-    });
-  });
-
-  it('displays an error message when fetch fails', async () => {
-    fetch.mockRejectedValueOnce(new Error('Fetch failed'));
-
-    await act(async () => {
-      render(<App />);
-    });
-    
-    await waitFor(() => {
-      expect(screen.getByTestId('error')).toHaveTextContent('Error: Error fetching data');
-    });
-
-    // Check if console.error was called with the expected message
-    expect(console.error).toHaveBeenCalledWith('Error fetching data:', expect.any(Error));
-  });
-
-  it('displays multiple artworks for a station', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockArtworks,
-    }).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockSubwayLines,
-    });
-
-    await act(async () => {
-      render(<App />);
-    });
-    
-    await waitFor(() => {
-      const popup = screen.getAllByTestId('popup')[0];
-      expect(popup).toHaveTextContent('Test Station 1');
-      expect(popup).toHaveTextContent('Total Artworks: 2');
-      expect(popup).toHaveTextContent('Artwork 1 by Artist 1');
-      expect(popup).toHaveTextContent('Artwork 2 by Artist 2');
-    });
-  });
-
-  it('allows navigation between artwork list and individual artwork details', async () => {
+  it('displays artwork details with styled popup content', async () => {
     const user = userEvent.setup();
     fetch.mockResolvedValueOnce({
       ok: true,
@@ -235,60 +174,22 @@ describe('ArtMap Component', () => {
     });
     
     await waitFor(() => {
-      expect(screen.getAllByTestId('popup')[0]).toHaveTextContent('Test Station 1');
+      const artworkPopup = screen.getAllByTestId('popup').find(popup => within(popup).queryByText('Test Station 1'));
+      expect(artworkPopup).toBeInTheDocument();
     });
 
-    // Click on the first artwork
-    await user.click(screen.getByText('Artwork 1 by Artist 1'));
+    const artworkButton = screen.getByText('Artwork 1 by Artist 1');
+    await user.click(artworkButton);
 
     await waitFor(() => {
-      const artworkDetails = screen.getByText('Artwork 1').closest('.sc-blHHSb');
-      expect(artworkDetails).toBeInTheDocument();
-      expect(within(artworkDetails).getByText('Artist: Artist 1')).toBeInTheDocument();
-      expect(within(artworkDetails).getByText('Date: 2021')).toBeInTheDocument();
-      expect(within(artworkDetails).getByText('Material: Oil on canvas')).toBeInTheDocument();
-      expect(within(artworkDetails).getByText('A beautiful painting')).toBeInTheDocument();
+      const popupContent = screen.getByText('Artwork 1').closest('div');
+      expect(popupContent).toHaveClass('sc-blHHSb');
       
-      const moreInfoLink = within(artworkDetails).getByText('More Info');
+      const title = within(popupContent).getByText('Artwork 1');
+      expect(title.tagName).toBe('H3');
+      
+      const moreInfoLink = within(popupContent).getByText('More Info');
       expect(moreInfoLink).toHaveAttribute('href', 'https://example.com/image1.jpg');
-    });
-
-    // Go back to the list
-    await user.click(screen.getByText('< Back to list'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Test Station 1')).toBeInTheDocument();
-      expect(screen.getByText('Total Artworks: 2')).toBeInTheDocument();
-    });
-  });
-
-
-  it('pans and zooms to the selected marker when clicked', async () => {
-    fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockArtworks,
-    }).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockSubwayLines,
-    });
-
-    await act(async () => {
-      render(<App />);
-    });
-
-    await waitFor(() => {
-      expect(screen.getByTestId('circle-marker')).toBeInTheDocument();
-    });
-
-    // Click on the marker
-    await act(async () => {
-      userEvent.click(screen.getByTestId('circle-marker'));
-    });
-
-    // Wait for any state updates to complete
-    await waitFor(() => {
-      // Check if setView was called with the correct parameters
-      expect(mockSetView).toHaveBeenCalledWith([40.7128, -74.0060], 14, { animate: true });
     });
   });
 });

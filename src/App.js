@@ -187,28 +187,64 @@ const ArtMap = () => {
     return <MultipleArtworkContent artworks={artworks} />;
   };
 
-  const SubwayLines = () => {
-    return subwayLines.map((line) => {
-      const coordinates = line.the_geom.coordinates.map(coord => [coord[1], coord[0]]);
-      return (
-        <Polyline
-          key={line.objectid}
-          positions={coordinates}
-          color={line.color || "#000000"}
-          weight={3}
-        >
-          <Popup>
-            <div>
-              <h3>Line: {line.name}</h3>
-              <p>Route Symbol: {line.rt_symbol}</p>
-              <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
-            </div>
-          </Popup>
-        </Polyline>
-      );
-    });
+  
+const getSubwayLineColor = (line) => {
+  const colorMap = {
+    '1': '#EE352E',
+    '2': '#EE352E',
+    '3': '#EE352E',
+    '4': '#00933C',
+    '5': '#00933C',
+    '6': '#00933C',
+    '7': '#B933AD',
+    'A': '#0039A6',
+    'C': '#0039A6',
+    'E': '#0039A6',
+    'B': '#FF6319',
+    'D': '#FF6319',
+    'F': '#FF6319',
+    'M': '#FF6319',
+    'G': '#6CBE45',
+    'J': '#996633',
+    'Z': '#996633',
+    'L': '#A7A9AC',
+    'N': '#FCCC0A',
+    'Q': '#FCCC0A',
+    'R': '#FCCC0A',
+    'S': '#808183',
+    'W': '#FCCC0A'
   };
 
+  if (line.color) {
+    return line.color;
+  }
+
+  const routeSymbol = line.rt_symbol || line.name;
+  return colorMap[routeSymbol] || '#000000';
+};
+
+const SubwayLines = () => {
+  return subwayLines.map((line) => {
+    const coordinates = line.the_geom.coordinates.map(coord => [coord[1], coord[0]]);
+    const lineColor = getSubwayLineColor(line);
+    return (
+      <Polyline
+        key={line.objectid}
+        positions={coordinates}
+        color={lineColor}
+        weight={3}
+      >
+        <Popup>
+          <StyledPopupContent>
+            <h3>Line: {line.name}</h3>
+            <p>Route Symbol: {line.rt_symbol}</p>
+            <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
+          </StyledPopupContent>
+        </Popup>
+      </Polyline>
+    );
+  });
+};
   const MapEventHandler = ({ groupedArtworks }) => {
     const map = useMap();
 
@@ -261,8 +297,8 @@ const ArtMap = () => {
       <GlobalStyle />
       <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <SubwayLines/>
         <MapEventHandler groupedArtworks={groupedArtworks} />
-        <SubwayLines />
       </MapContainer>
     </>
   );
