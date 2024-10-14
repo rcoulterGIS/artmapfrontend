@@ -33,14 +33,24 @@ const StyledPopupContent = styled.div`
   }
   
   ul {
-    list-style-type: disc;
-    padding-left: 20px;
+    list-style-type: none;
+    padding-left: 0;
     margin-bottom: 13px;
     margin-top: 0;
   }
   
   li {
+    display: flex;
+    align-items: flex-start;
     margin-bottom: 5px;
+  }
+  
+  li::before {
+    content: "•";
+    display: inline-block;
+    width: 1em;
+    margin-right: 0.5em;
+    flex-shrink: 0;
   }
   
   button {
@@ -51,6 +61,7 @@ const StyledPopupContent = styled.div`
     cursor: pointer;
     padding: 0;
     font: inherit;
+    text-align: left;
     
     &:hover {
       text-decoration: underline;
@@ -61,6 +72,7 @@ const StyledPopupContent = styled.div`
     margin: 5px 0;
   }
 `;
+
 
 const ArtMap = () => {
   const [artworks, setArtworks] = useState([]);
