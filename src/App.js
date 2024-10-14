@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import React, { useState, useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import styled, { createGlobalStyle } from 'styled-components';
 
@@ -73,45 +73,45 @@ const StyledPopupContent = styled.div`
   }
 `;
 
-const PanToMarker = ({ center }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (center) {
-      map.setView(center, 14, { animate: true });
-    }
-  }, [center, map]);
-
-  return null;
-};
-
 const ArtMap = () => {
   const [artworks, setArtworks] = useState([]);
+  const [subwayLines, setSubwayLines] = useState([]);
   const [error, setError] = useState(null);
-  const [selectedCenter, setSelectedCenter] = useState(null);
 
   useEffect(() => {
-    const fetchArtworks = async () => {
+    const fetchData = async () => {
       const apiUrl = process.env.REACT_APP_API_URL;
+      const subwayLinesUrl = 'https://data.cityofnewyork.us/resource/s7zz-qmyz.json';
+      
       if (!apiUrl) {
         setError('API URL is not defined');
         return;
       }
 
       try {
-        const response = await fetch(`${apiUrl}/artworks`);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        const [artworksResponse, subwayLinesResponse] = await Promise.all([
+          fetch(`${apiUrl}/artworks`),
+          fetch(subwayLinesUrl)
+        ]);
+
+        if (!artworksResponse.ok || !subwayLinesResponse.ok) {
+          throw new Error('One or more network responses were not ok');
         }
-        const data = await response.json();
-        setArtworks(data);
+
+        const [artworksData, subwayLinesData] = await Promise.all([
+          artworksResponse.json(),
+          subwayLinesResponse.json()
+        ]);
+
+        setArtworks(artworksData);
+        setSubwayLines(subwayLinesData);
       } catch (error) {
-        setError('Error fetching artwork data');
-        console.error('Error fetching artwork data:', error);
+        setError('Error fetching data');
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchArtworks();
+    fetchData();
   }, []);
 
   const groupedArtworks = useMemo(() => {
@@ -123,10 +123,6 @@ const ArtMap = () => {
       return acc;
     }, {});
   }, [artworks]);
-
-  const handleMarkerClick = useCallback((lat, lng) => {
-    setSelectedCenter([lat, lng]);
-  }, []);
 
   const SingleArtworkContent = ({ artwork }) => (
     <StyledPopupContent>
@@ -191,17 +187,37 @@ const ArtMap = () => {
     return <MultipleArtworkContent artworks={artworks} />;
   };
 
-  if (error) {
-    return <div data-testid="error">Error: {error}</div>;
-  }
+  const SubwayLines = () => {
+    return subwayLines.map((line) => {
+      const coordinates = line.the_geom.coordinates.map(coord => [coord[1], coord[0]]);
+      return (
+        <Polyline
+          key={line.objectid}
+          positions={coordinates}
+          color={line.color || "#000000"}
+          weight={3}
+        >
+          <Popup>
+            <div>
+              <h3>Line: {line.name}</h3>
+              <p>Route Symbol: {line.rt_symbol}</p>
+              <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
+            </div>
+          </Popup>
+        </Polyline>
+      );
+    });
+  };
 
-  return (
-    <>
-      <GlobalStyle />
-      <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }} data-testid="map-container">
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" data-testid="tile-layer" />
-        <PanToMarker center={selectedCenter} />
-        
+  const MapEventHandler = ({ groupedArtworks }) => {
+    const map = useMap();
+
+    const handleMarkerClick = (center) => {
+      map.setView(center, 14, { animate: true });
+    };
+
+    return (
+      <>
         {Object.entries(groupedArtworks).map(([stationName, stationArtworks]) => {
           const center = stationArtworks.reduce(
             (acc, artwork) => {
@@ -222,17 +238,31 @@ const ArtMap = () => {
               weight={1}
               opacity={1}
               fillOpacity={0.8}
-              data-testid="circle-marker"
               eventHandlers={{
-                click: () => handleMarkerClick(center[0], center[1])
+                click: () => handleMarkerClick(center),
               }}
             >
-              <Popup data-testid="popup">
+              <Popup>
                 <ArtworkPopup artworks={stationArtworks} />
               </Popup>
             </CircleMarker>
           );
         })}
+      </>
+    );
+  };
+
+  if (error) {
+    return <div data-testid="error">Error: {error}</div>;
+  }
+
+  return (
+    <>
+      <GlobalStyle />
+      <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <MapEventHandler groupedArtworks={groupedArtworks} />
+        <SubwayLines />
       </MapContainer>
     </>
   );
