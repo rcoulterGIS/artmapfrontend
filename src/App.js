@@ -73,10 +73,100 @@ const StyledPopupContent = styled.div`
   }
 `;
 
+const LegendContainer = styled.div`
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  transition: max-height 0.3s ease-out;
+  max-height: ${props => props.isExpanded ? '70vh' : '40px'};
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const LegendContent = styled.div`
+  padding: 10px;
+  overflow-y: auto;
+  flex-grow: 1;
+`;
+
+const LegendHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+`;
+
+const LegendTitle = styled.span`
+  font-weight: bold;
+`;
+
+const LegendToggle = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+`;
+
+const LegendItem = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const LegendColor = styled.div`
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: ${props => props.isCircle ? '50%' : '0'};
+`;
+
+const LegendLabel = styled.span`
+  font-size: 14px;
+`;
+
+const ToggleButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
+  background-color: white;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  &:hover {
+    background-color: #f4f4f4;
+  }
+`;
+
 const ArtMap = () => {
   const [artworks, setArtworks] = useState([]);
   const [subwayLines, setSubwayLines] = useState([]);
   const [error, setError] = useState(null);
+  const [showSubwayLines, setShowSubwayLines] = useState(true);
+
+  const subwayLineColors = {
+    'A-C-E': '#0039A6',
+    'B-D-F-M': '#FF6319',
+    'G': '#6CBE45',
+    'J-Z': '#996633',
+    'L': '#A7A9AC',
+    'N-Q-R-W': '#FCCC0A',
+    '1-2-3': '#EE352E',
+    '4-5-6': '#00933C',
+    '7': '#B933AD',
+    'S': '#808183',
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -187,63 +277,40 @@ const ArtMap = () => {
     return <MultipleArtworkContent artworks={artworks} />;
   };
 
-  
-const getSubwayLineColor = (line) => {
-  const colorMap = {
-    '1': '#EE352E',
-    '2': '#EE352E',
-    '3': '#EE352E',
-    '4': '#00933C',
-    '5': '#00933C',
-    '6': '#00933C',
-    '7': '#B933AD',
-    'A': '#0039A6',
-    'C': '#0039A6',
-    'E': '#0039A6',
-    'B': '#FF6319',
-    'D': '#FF6319',
-    'F': '#FF6319',
-    'M': '#FF6319',
-    'G': '#6CBE45',
-    'J': '#996633',
-    'Z': '#996633',
-    'L': '#A7A9AC',
-    'N': '#FCCC0A',
-    'Q': '#FCCC0A',
-    'R': '#FCCC0A',
-    'S': '#808183',
-    'W': '#FCCC0A'
+  const getSubwayLineColor = (line) => {
+    const routeSymbol = line.rt_symbol || line.name;
+    for (const [group, color] of Object.entries(subwayLineColors)) {
+      if (group.includes(routeSymbol)) {
+        return color;
+      }
+    }
+    return '#000000'; // default color if no match found
   };
 
-  if (line.color) {
-    return line.color;
-  }
+  const SubwayLines = () => {
+    if (!showSubwayLines) return null;
 
-  const routeSymbol = line.rt_symbol || line.name;
-  return colorMap[routeSymbol] || '#000000';
-};
+    return subwayLines.map((line) => {
+      const coordinates = line.the_geom.coordinates.map(coord => [coord[1], coord[0]]);
+      const lineColor = getSubwayLineColor(line);
+      return (
+        <Polyline
+          key={line.objectid}
+          positions={coordinates}
+          color={lineColor}
+          weight={3}
+        >
+          <Popup>
+            <StyledPopupContent>
+              <h3>Line: {line.name}</h3>
+              <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
+            </StyledPopupContent>
+          </Popup>
+        </Polyline>
+      );
+    });
+  };
 
-const SubwayLines = () => {
-  return subwayLines.map((line) => {
-    const coordinates = line.the_geom.coordinates.map(coord => [coord[1], coord[0]]);
-    const lineColor = getSubwayLineColor(line);
-    return (
-      <Polyline
-        key={line.objectid}
-        positions={coordinates}
-        color={lineColor}
-        weight={3}
-      >
-        <Popup>
-          <StyledPopupContent>
-            <h3>Line: {line.name}</h3>
-            <a href={line.url} target="_blank" rel="noopener noreferrer">More Info</a>
-          </StyledPopupContent>
-        </Popup>
-      </Polyline>
-    );
-  });
-};
   const MapEventHandler = ({ groupedArtworks }) => {
     const map = useMap();
 
@@ -287,6 +354,35 @@ const SubwayLines = () => {
     );
   };
 
+  const Legend = () => {
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    const toggleLegend = () => {
+      setIsExpanded(!isExpanded);
+    };
+
+    return (
+      <LegendContainer isExpanded={isExpanded}>
+        <LegendHeader onClick={toggleLegend}>
+          <LegendTitle>Legend</LegendTitle>
+          <LegendToggle>{isExpanded ? '▼' : '▲'}</LegendToggle>
+        </LegendHeader>
+        <LegendContent>
+          <LegendItem>
+            <LegendColor style={{ background: '#1e90ff' }} isCircle />
+            <LegendLabel>Artwork Location</LegendLabel>
+          </LegendItem>
+          {Object.entries(subwayLineColors).map(([name, color]) => (
+            <LegendItem key={name}>
+              <LegendColor style={{ background: color }} />
+              <LegendLabel>{name}</LegendLabel>
+            </LegendItem>
+          ))}
+        </LegendContent>
+      </LegendContainer>
+    );
+  };
+
   if (error) {
     return <div data-testid="error">Error: {error}</div>;
   }
@@ -296,9 +392,13 @@ const SubwayLines = () => {
       <GlobalStyle />
       <MapContainer center={[40.7128, -74.0060]} zoom={11} style={{ height: '100vh', width: '100%' }}>
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <SubwayLines/>
+        <SubwayLines />
         <MapEventHandler groupedArtworks={groupedArtworks} />
+        <Legend />
       </MapContainer>
+      <ToggleButton onClick={() => setShowSubwayLines(!showSubwayLines)}>
+        {showSubwayLines ? 'Hide Subway Lines' : 'Show Subway Lines'}
+      </ToggleButton>
     </>
   );
 };
