@@ -32,5 +32,5 @@ jobs:
           git fetch origin
           git checkout -B netlify origin/netlify || git checkout -b netlify
           git merge origin/main --allow-unrelated-histories
-          git commit --allow-empty -m "Merge main into netlify"
+          git commit --allow-empty -m "github actions deployment"
           git push origin netlify
