@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+      PAT: ${{ secrets.PAT }}
     steps:
       - uses: actions/checkout@v2
         with:
