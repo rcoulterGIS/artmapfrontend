@@ -22,4 +22,4 @@ jobs:
     - name: Run tests
       run: npm test
     - name: Deploy
-      run: curl -X POST -d '{}' https://api.netlify.com/build_hooks/670db10117d4f39bb84107cd
+      run: git merge netlify
