@@ -13,6 +13,8 @@ jobs:
       REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
@@ -30,4 +32,9 @@ jobs:
           git config user.email github-actions@github.com
           git fetch origin netlify:netlify || git checkout -b netlify
           git merge origin/main
-          git push https://$PAT@github.com/${{ github.repository }} netlify
+          git push origin netlify
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PAT }}
+          branch: netlify
