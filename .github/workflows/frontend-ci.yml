@@ -21,5 +21,7 @@ jobs:
       run: npm ci
     - name: Run tests
       run: npm test
-    - name: Deploy
-      run: curl -X POST -d '{}' https://api.netlify.com/build_hooks/670db10117d4f39bb84107cd
+    - name: Checkout Prod Branch
+      run: git checkout netlify
+    - name: Git Pull
+      run: git pull main
