@@ -223,4 +223,42 @@ describe('ArtMap Component', () => {
     expect(screen.getAllByTestId('polyline')).toHaveLength(3);
     expect(screen.getByText('Hide Subway Lines')).toBeInTheDocument();
   });
+
+  it('keeps legend expanded when toggling subway lines', async () => {
+    const user = userEvent.setup();
+    await setupTest();
+    
+    const legendToggle = screen.getByText('▼');
+    expect(legendToggle).toBeInTheDocument();
+    expect(screen.getByText('Legend')).toBeVisible();
+
+    const toggleButton = screen.getByText('Hide Subway Lines');
+    await user.click(toggleButton);
+
+    // After hiding subway lines, legend should still be expanded
+    expect(screen.getByText('▼')).toBeInTheDocument();
+    expect(screen.getByText('Legend')).toBeVisible();
+
+  });
+
+  it('keeps legend collapsed when toggling subway lines', async () => {
+    const user = userEvent.setup();
+    await setupTest();
+    
+    const legendToggle = screen.getByText('▼');
+    await user.click(legendToggle);
+    expect(screen.getByText('▲')).toBeInTheDocument();
+
+    const toggleButton = screen.getByText('Hide Subway Lines');
+    await user.click(toggleButton);
+
+    // After hiding subway lines, legend should still be collapsed
+    expect(screen.getByText('▲')).toBeInTheDocument();
+
+    // Show subway lines again
+    await user.click(screen.getByText('Show Subway Lines'));
+
+    // Legend should still be collapsed
+    expect(screen.getByText('▲')).toBeInTheDocument();
+  });
 });
