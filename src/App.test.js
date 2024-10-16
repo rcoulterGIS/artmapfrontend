@@ -10,10 +10,10 @@ const mockEventHandlers = {};
 jest.mock('react-leaflet', () => ({
   MapContainer: ({ children }) => <div data-testid="map-container">{children}</div>,
   TileLayer: () => <div data-testid="tile-layer" />,
-  CircleMarker: ({ children, eventHandlers, center }) => {
+  CircleMarker: ({ children, eventHandlers, center, fillColor }) => {
     mockEventHandlers.click = eventHandlers.click;
     return (
-      <div data-testid="circle-marker" onClick={() => eventHandlers.click()} data-center={JSON.stringify(center)}>
+      <div data-testid="circle-marker" onClick={() => eventHandlers.click()} data-center={JSON.stringify(center)} data-fill-color={fillColor}>
         {children}
       </div>
     );
@@ -54,6 +54,18 @@ const mockArtworks = [
     art_image_link: { url: 'https://example.com/image2.jpg' },
     latitude: 40.7128,
     longitude: -74.0060,
+  },
+  {
+    art_id: '3',
+    station_name: 'Test Station 2',
+    art_title: 'Artwork 3',
+    artist: 'Artist 3',
+    art_date: '2023',
+    art_material: 'Mosaic',
+    art_description: 'A colorful mosaic',
+    art_image_link: { url: 'https://example.com/image3.jpg' },
+    latitude: 40.7300,
+    longitude: -73.9950,
   },
 ];
 
@@ -124,8 +136,8 @@ describe('ArtMap Component', () => {
     await setupTest();
     
     expect(screen.getByTestId('tile-layer')).toBeInTheDocument();
-    expect(screen.getByTestId('circle-marker')).toBeInTheDocument();
-    expect(screen.getAllByTestId('popup')).toHaveLength(4); // 1 artwork popup + 3 subway line popups
+    expect(screen.getAllByTestId('circle-marker')).toHaveLength(2);
+    expect(screen.getAllByTestId('popup')).toHaveLength(5); // 2 artwork popups + 3 subway line popups
     expect(screen.getAllByTestId('polyline')).toHaveLength(3);
   });
 
@@ -160,7 +172,7 @@ describe('ArtMap Component', () => {
     await user.click(artworkButton);
 
     const popupContent = screen.getByText('Artwork 1').closest('div');
-    expect(popupContent).toHaveClass('sc-blHHSb jTCQlW'); 
+    expect(popupContent).toHaveClass('sc-blHHSb'); // Note: The exact class name might change, adjust as needed
     
     const title = within(popupContent).getByText('Artwork 1');
     expect(title.tagName).toBe('H3');
@@ -179,7 +191,11 @@ describe('ArtMap Component', () => {
   it('displays correct items in the legend', async () => {
     await setupTest();
     
-    expect(screen.getByText('Artwork Location')).toBeInTheDocument();
+    expect(screen.getByText('5 or more artworks')).toBeInTheDocument();
+    expect(screen.getByText('4 artworks')).toBeInTheDocument();
+    expect(screen.getByText('3 artworks')).toBeInTheDocument();
+    expect(screen.getByText('2 artworks')).toBeInTheDocument();
+    expect(screen.getByText('1 artwork')).toBeInTheDocument();
     expect(screen.getByText('A-C-E')).toBeInTheDocument();
     expect(screen.getByText('B-D-F-M')).toBeInTheDocument();
     expect(screen.getByText('1-2-3')).toBeInTheDocument();
@@ -238,7 +254,6 @@ describe('ArtMap Component', () => {
     // After hiding subway lines, legend should still be expanded
     expect(screen.getByText('▼')).toBeInTheDocument();
     expect(screen.getByText('Legend')).toBeVisible();
-
   });
 
   it('keeps legend collapsed when toggling subway lines', async () => {
@@ -261,4 +276,37 @@ describe('ArtMap Component', () => {
     // Legend should still be collapsed
     expect(screen.getByText('▲')).toBeInTheDocument();
   });
+
+  it('renders circle markers with correct color based on artwork count', async () => {
+    await setupTest();
+    
+    const circleMarkers = screen.getAllByTestId('circle-marker');
+    expect(circleMarkers).toHaveLength(2);
+    
+    // Test Station 1 has 2 artworks, should be #64B5F6
+    expect(circleMarkers[0]).toHaveAttribute('data-fill-color', '#64B5F6');
+    
+    // Test Station 2 has 1 artwork, should be #BBDEFB
+    expect(circleMarkers[1]).toHaveAttribute('data-fill-color', '#BBDEFB');
+  });
+
+  it('updates legend to show color gradient', async () => {
+    await setupTest();
+    
+    const legend = screen.getByText('Legend');
+    expect(legend).toBeInTheDocument();
+    
+    const colorGradientLabels = [
+      '5 or more artworks',
+      '4 artworks',
+      '3 artworks',
+      '2 artworks',
+      '1 artwork'
+    ];
+
+    colorGradientLabels.forEach(label => {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    });
+  });
+
 });

@@ -20,6 +20,7 @@ const GlobalStyle = createGlobalStyle`
   .leaflet-popup-close-button {
     z-index: 1000;
   }
+
 `;
 
 const StyledPopupContent = styled.div`
@@ -314,11 +315,20 @@ const ArtMap = () => {
 
   const MapEventHandler = ({ groupedArtworks }) => {
     const map = useMap();
-
+  
     const handleMarkerClick = (center) => {
       map.setView(center, 14, { animate: true });
     };
-
+  
+    const getColor = (count) => {
+      // Color gradient from light blue to dark blue
+      if (count === 1) return '#BBDEFB';
+      if (count === 2) return '#64B5F6';
+      if (count === 3) return '#2196F3';
+      if (count === 4) return '#1976D2';
+      return '#0D47A1'; // 5 or more
+    };
+  
     return (
       <>
         {Object.entries(groupedArtworks).map(([stationName, stationArtworks]) => {
@@ -330,13 +340,16 @@ const ArtMap = () => {
             },
             [0, 0]
           ).map(coord => coord / stationArtworks.length);
-
+  
+          const artworkCount = stationArtworks.length;
+          const fillColor = getColor(artworkCount);
+  
           return (
             <CircleMarker
               key={stationName}
               center={center}
-              radius={5}
-              fillColor="#1e90ff"
+              radius={10}
+              fillColor={fillColor}
               color="#000"
               weight={1}
               opacity={1}
@@ -368,10 +381,26 @@ const ArtMap = () => {
           <LegendToggle>{isLegendExpanded ? '▼' : '▲'}</LegendToggle>
         </LegendHeader>
         <LegendContent>
-          <LegendItem>
-            <LegendColor style={{ background: '#1e90ff' }} isCircle />
-            <LegendLabel>Artwork Location</LegendLabel>
-          </LegendItem>
+        <LegendItem>
+          <LegendColor style={{ background: '#0D47A1' }} isCircle />
+          <LegendLabel>5 or more artworks</LegendLabel>
+        </LegendItem>
+        <LegendItem>
+          <LegendColor style={{ background: '#1976D2' }} isCircle />
+          <LegendLabel>4 artworks</LegendLabel>
+        </LegendItem>
+        <LegendItem>
+          <LegendColor style={{ background: '#2196F3' }} isCircle />
+          <LegendLabel>3 artworks</LegendLabel>
+        </LegendItem>
+        <LegendItem>
+          <LegendColor style={{ background: '#64B5F6' }} isCircle />
+          <LegendLabel>2 artworks</LegendLabel>
+        </LegendItem>
+        <LegendItem>
+          <LegendColor style={{ background: '#BBDEFB' }} isCircle />
+          <LegendLabel>1 artwork</LegendLabel>
+        </LegendItem>
           {Object.entries(subwayLineColors).map(([name, color]) => (
             <LegendItem key={name}>
               <LegendColor style={{ background: color }} />
