@@ -383,7 +383,7 @@ const ArtMap = () => {
         <LegendContent>
         <LegendItem>
           <LegendColor style={{ background: '#0D47A1' }} isCircle />
-          <LegendLabel>5 or more artworks</LegendLabel>
+          <LegendLabel>5 or more</LegendLabel>
         </LegendItem>
         <LegendItem>
           <LegendColor style={{ background: '#1976D2' }} isCircle />

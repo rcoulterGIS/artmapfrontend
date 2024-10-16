@@ -191,7 +191,7 @@ describe('ArtMap Component', () => {
   it('displays correct items in the legend', async () => {
     await setupTest();
     
-    expect(screen.getByText('5 or more artworks')).toBeInTheDocument();
+    expect(screen.getByText('5 or more')).toBeInTheDocument();
     expect(screen.getByText('4 artworks')).toBeInTheDocument();
     expect(screen.getByText('3 artworks')).toBeInTheDocument();
     expect(screen.getByText('2 artworks')).toBeInTheDocument();
@@ -297,7 +297,7 @@ describe('ArtMap Component', () => {
     expect(legend).toBeInTheDocument();
     
     const colorGradientLabels = [
-      '5 or more artworks',
+      '5 or more',
       '4 artworks',
       '3 artworks',
       '2 artworks',
