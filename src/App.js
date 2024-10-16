@@ -154,6 +154,7 @@ const ArtMap = () => {
   const [subwayLines, setSubwayLines] = useState([]);
   const [error, setError] = useState(null);
   const [showSubwayLines, setShowSubwayLines] = useState(true);
+  const [isLegendExpanded, setIsLegendExpanded] = useState(true);
 
   const subwayLineColors = {
     'A-C-E': '#0039A6',
@@ -355,17 +356,16 @@ const ArtMap = () => {
   };
 
   const Legend = () => {
-    const [isExpanded, setIsExpanded] = useState(true);
 
     const toggleLegend = () => {
-      setIsExpanded(!isExpanded);
+      setIsLegendExpanded(!isLegendExpanded);
     };
 
     return (
-      <LegendContainer isExpanded={isExpanded}>
+      <LegendContainer isExpanded={isLegendExpanded}>
         <LegendHeader onClick={toggleLegend}>
           <LegendTitle>Legend</LegendTitle>
-          <LegendToggle>{isExpanded ? '▼' : '▲'}</LegendToggle>
+          <LegendToggle>{isLegendExpanded ? '▼' : '▲'}</LegendToggle>
         </LegendHeader>
         <LegendContent>
           <LegendItem>
