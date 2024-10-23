@@ -75,18 +75,23 @@ const StyledPopupContent = styled.div`
 `;
 
 const LegendContainer = styled.div`
-  position: absolute;
+  position: fixed;
   bottom: 20px;
   right: 20px;
   background: white;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  z-index: 1000;
+  z-index: 2000;
   transition: max-height 0.3s ease-out;
   max-height: ${props => props.isExpanded ? '70vh' : '40px'};
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 200px;
+  
+  /* Ensure container stays above Safari UI */
+  -webkit-transform: translateZ(1px);
+  transform: translateZ(1px);
 `;
 
 const LegendContent = styled.div`
@@ -104,6 +109,12 @@ const LegendHeader = styled.div`
   background-color: #f0f0f0;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
+  position: relative;
+  z-index: 2001;
+  
+  /* Ensure header stays clickable */
+  -webkit-transform: translateZ(2px);
+  transform: translateZ(2px);
 `;
 
 const LegendTitle = styled.span`
@@ -111,10 +122,18 @@ const LegendTitle = styled.span`
 `;
 
 const LegendToggle = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
+background: none;
+border: none;
+cursor: pointer;
+font-size: 18px;
+padding: 5px;
+margin: -5px;
+
+/* Increase touch target size */
+@media (max-width: 768px) {
+  padding: 10px;
+  margin: -10px;
+}
 `;
 
 const LegendItem = styled.div`
