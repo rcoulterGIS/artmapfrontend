@@ -122,10 +122,12 @@ const LegendTitle = styled.span`
 `;
 
 const LegendToggle = styled.button`
-background: none;
-border: none;
+background-color: white;
+border: 2px solid rgba(0,0,0,0.2);
+border-radius: 4px;
+font-size: 14px;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 cursor: pointer;
-font-size: 18px;
 padding: 5px;
 margin: -5px;
 
