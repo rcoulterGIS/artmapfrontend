@@ -1,5 +1,5 @@
 # NYC Subway Art Explorer Frontend
-This project is the frontend for the NYC Subway Art Explorer, a web application that visualizes artwork installations in New York City subway stations.
+This project is the frontend for the [NYC Subway Art Explorer](https://transitartmap.netlify.app/), a web application that visualizes artwork installations in New York City subway stations.
 
 This application runs using the [NYC Transit Art Explorer Backend](https://github.com/rcoulterGIS/artmapbackend). The backend can be deployed locally for testing purposes. See the repository for details. 
 
