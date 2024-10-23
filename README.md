@@ -19,7 +19,7 @@ Node.js (v14 or later recommended)
 ### `touch .env`
 
 ## Set the environment variable to the local port that will be serving the application. 
-### `REACT_API_APP_URL=http://localhost:3000`
+### `REACT_API_APP_URL=http://localhost:8000`
 
 ## Start the application locally.
 ### `npm start`
