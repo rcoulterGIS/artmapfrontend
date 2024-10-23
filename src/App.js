@@ -78,9 +78,11 @@ const LegendContainer = styled.div`
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: white;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  background-color: white;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
   z-index: 2000;
   transition: max-height 0.3s ease-out;
   max-height: ${props => props.isExpanded ? '70vh' : '40px'};
@@ -118,21 +120,26 @@ const LegendHeader = styled.div`
 `;
 
 const LegendTitle = styled.span`
-  font-weight: bold;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px;
+  margin: -5px;
 `;
 
 const LegendToggle = styled.button`
-background-color: white;
-border: 2px solid rgba(0,0,0,0.2);
-border-radius: 4px;
-font-size: 14px;
-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-cursor: pointer;
-padding: 5px;
-margin: -5px;
+  background-color: #f0f0f0;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-radius: 4px;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  padding: 5px;
+  margin: -5px;
 
-/* Increase touch target size */
-@media (max-width: 768px) {
+  /* Increase touch target size */
+  @media (max-width: 768px) {
   padding: 10px;
   margin: -10px;
 }
