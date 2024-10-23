@@ -135,31 +135,30 @@ const LegendLabel = styled.span`
 `;
 
 const ToggleButton = styled.button`
-  position: fixed;
-  top: env(safe-area-inset-top, 10px);
-  right: 10px;
-  z-index: 1000;
-  background-color: white;
-  border: 2px solid rgba(0,0,0,0.2);
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 60px; // Add spacing for mobile browsers
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  
-  @media (min-width: 768px) {
-    margin-top: 10px; // Reset for desktop
-  }
-  
-  &:hover {
-    background-color: #f4f4f4;
-  }
-  
-  // Make sure button stays above other elements
-  transform: translateZ(0);
-  will-change: transform;
-  -webkit-font-smoothing: antialiased;
+position: fixed;
+top: 10px;
+right: 10px;
+z-index: 2000;
+background-color: white;
+border: 2px solid rgba(0,0,0,0.2);
+border-radius: 4px;
+padding: 5px 10px;
+font-size: 14px;
+cursor: pointer;
+box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+/* Ensure button stays above Safari UI */
+-webkit-transform: translateZ(1px);
+transform: translateZ(1px);
+
+&:hover {
+  background-color: #f4f4f4;
+}
+
+/* Add touch target padding for mobile */
+@media (max-width: 768px) {
+  padding: 8px 12px;
+}
 `;
 
 const ArtMap = () => {
