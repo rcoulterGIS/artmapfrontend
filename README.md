@@ -1,7 +1,7 @@
 # NYC Subway Art Explorer Frontend
 This project is the frontend for the NYC Subway Art Explorer, a web application that visualizes artwork installations in New York City subway stations.
 
-This application runs using the [NYC Transit Artmap Backend](https://github.com/rcoulterGIS/artmapbackend). The backend can be deployed locally for testing purposes. See the repository for details. 
+This application runs using the [NYC Transit Art Explorer Backend](https://github.com/rcoulterGIS/artmapbackend). The backend can be deployed locally for testing purposes. See the repository for details. 
 
 ## Project Structure
 frontend/
