@@ -1,5 +1,4 @@
 name: Frontend CI
-
 on:
   push:
     branches: [ main ]
@@ -16,14 +15,18 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT }}
+          
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '18'
+          
       - name: Install dependencies
         run: npm ci
+        
       - name: Run tests
         run: npm test
+        
       - name: Merge to netlify branch
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
@@ -34,3 +37,32 @@ jobs:
           git merge origin/main --allow-unrelated-histories
           git commit --allow-empty -m "github actions deployment"
           git push origin netlify
+          
+      - name: Close Netlify PRs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.PAT }}
+          script: |
+            const pulls = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: 'netlify'
+            });
+            
+            for (const pr of pulls.data) {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                state: 'closed'
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: 'Automatically closing Netlify PR as changes have been deployed via GitHub Actions.'
+              });
+            }
