@@ -42,6 +42,11 @@ const mockArtworks = [
     art_image_link: { url: 'https://example.com/image1.jpg' },
     latitude: 40.7128,
     longitude: -74.0060,
+    related_stations: [{
+      station_id: 'STATION1',
+      line: 'A,C,E',
+      borough: 'M'
+    }]
   },
   {
     art_id: '2',
@@ -54,10 +59,15 @@ const mockArtworks = [
     art_image_link: { url: 'https://example.com/image2.jpg' },
     latitude: 40.7128,
     longitude: -74.0060,
+    related_stations: [{
+      station_id: 'STATION1',
+      line: 'A,C,E',
+      borough: 'M'
+    }]
   },
   {
     art_id: '3',
-    station_name: 'Test Station 2',
+    station_name: 'Test Station 1',  // Same name but different station
     art_title: 'Artwork 3',
     artist: 'Artist 3',
     art_date: '2023',
@@ -66,6 +76,28 @@ const mockArtworks = [
     art_image_link: { url: 'https://example.com/image3.jpg' },
     latitude: 40.7300,
     longitude: -73.9950,
+    related_stations: [{
+      station_id: 'STATION2',  // Different station_id
+      line: '1,2,3',
+      borough: 'M'
+    }]
+  },
+  {
+    art_id: '4',
+    station_name: 'Test Station 2',
+    art_title: 'Artwork 4',
+    artist: 'Artist 4',
+    art_date: '2023',
+    art_material: 'Glass',
+    art_description: 'A glass installation',
+    art_image_link: { url: 'https://example.com/image4.jpg' },
+    latitude: 40.7400,
+    longitude: -73.9850,
+    related_stations: [{
+      station_id: 'STATION3',
+      line: 'B,D',
+      borough: 'M'
+    }]
   },
 ];
 
@@ -136,8 +168,8 @@ describe('ArtMap Component', () => {
     await setupTest();
     
     expect(screen.getByTestId('tile-layer')).toBeInTheDocument();
-    expect(screen.getAllByTestId('circle-marker')).toHaveLength(2);
-    expect(screen.getAllByTestId('popup')).toHaveLength(5); // 2 artwork popups + 3 subway line popups
+    expect(screen.getAllByTestId('circle-marker')).toHaveLength(3);
+    expect(screen.getAllByTestId('popup')).toHaveLength(6); // 3 artwork popups + 3 subway line popups
     expect(screen.getAllByTestId('polyline')).toHaveLength(3);
   });
 
@@ -281,7 +313,7 @@ describe('ArtMap Component', () => {
     await setupTest();
     
     const circleMarkers = screen.getAllByTestId('circle-marker');
-    expect(circleMarkers).toHaveLength(2);
+    expect(circleMarkers).toHaveLength(3);
     
     // Test Station 1 has 2 artworks, should be #64B5F6
     expect(circleMarkers[0]).toHaveAttribute('data-fill-color', '#64B5F6');
@@ -307,6 +339,61 @@ describe('ArtMap Component', () => {
     colorGradientLabels.forEach(label => {
       expect(screen.getByText(label)).toBeInTheDocument();
     });
+  });
+  it('correctly clusters artworks based on station_id', async () => {
+    await setupTest();
+    
+    const circleMarkers = screen.getAllByTestId('circle-marker');
+    expect(circleMarkers).toHaveLength(3); // Should have 3 markers for 3 unique stations
+    
+    // Check that artworks at the same station are clustered together
+    const stationOneMarker = circleMarkers.find(marker => {
+      const center = JSON.parse(marker.getAttribute('data-center'));
+      return center[0] === 40.7128 && center[1] === -74.0060;
+    });
+    
+    expect(stationOneMarker).toHaveAttribute('data-fill-color', '#64B5F6'); // Color for 2 artworks
+  });
+
+  it('creates separate markers for same-name stations with different station_ids', async () => {
+    await setupTest();
+    
+    const circleMarkers = screen.getAllByTestId('circle-marker');
+    const markerCenters = circleMarkers.map(marker => 
+      JSON.parse(marker.getAttribute('data-center'))
+    );
+
+    // Verify we have markers at different coordinates for same-name stations
+    expect(markerCenters).toContainEqual([40.7128, -74.0060]); // STATION1
+    expect(markerCenters).toContainEqual([40.7300, -73.9950]); // STATION2
+  });
+
+  it('displays correct artwork counts in clustered popups', async () => {
+    const user = userEvent.setup();
+    await setupTest();
+    
+    const circleMarkers = screen.getAllByTestId('circle-marker');
+    
+    // Click the first marker (STATION1 with 2 artworks)
+    await user.click(circleMarkers[0]);
+    
+    const popupContent = screen.getByText('Total Artworks: 2');
+    expect(popupContent).toBeInTheDocument();
+    
+    // Verify both artworks are listed
+    expect(screen.getByText('Artwork 1 by Artist 1')).toBeInTheDocument();
+    expect(screen.getByText('Artwork 2 by Artist 2')).toBeInTheDocument();
+  });
+
+  it('correctly handles single-artwork stations', async () => {
+    await setupTest();
+    
+    const circleMarkers = screen.getAllByTestId('circle-marker');
+    const singleArtworkMarker = circleMarkers.find(marker => 
+      marker.getAttribute('data-fill-color') === '#BBDEFB'
+    );
+    
+    expect(singleArtworkMarker).toBeInTheDocument();
   });
 
 });
