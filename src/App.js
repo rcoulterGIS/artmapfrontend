@@ -261,6 +261,7 @@ const ArtMap = () => {
       <p>Artist: {artwork.artist}</p>
       <p>Date: {artwork.art_date}</p>
       <p>Material: {artwork.art_material}</p>
+      <p>Station: {artwork.station_name}</p>
       <p>{artwork.art_description}</p>
       {artwork.art_image_link && artwork.art_image_link.url && (
         <a href={artwork.art_image_link.url} target="_blank" rel="noopener noreferrer">More Info</a>
