@@ -4,26 +4,26 @@ This project is the frontend for the NYC Subway Art Explorer, a web application 
 This application runs using the [NYC Transit Art Explorer Backend](https://github.com/rcoulterGIS/artmapbackend). The backend can be deployed locally for testing purposes. See the repository for details. 
 
 ## Project Structure
-frontend/
-├── .env
-├── .gitignore
-├── babel.config.js
-├── README.md
-├── package.json
-├── package-lock.json
-├── public/
-│   ├── index.html
-│   ├── manifest.json
-│   └── robots.txt
-├── src/
-│   ├── App.js
-│   ├── App.test.js
-│   ├── index.css
-│   ├── index.js
-│   ├── reportWebVitals.js
-│   └── setupTests.js
-└── .github/workflows
-    └── frontend-cli.yaml
+frontend/ \
+├── .env \
+├── .gitignore \
+├── babel.config.js \
+├── README.md 
+├── package.json \
+├── package-lock.json \
+├── public/ \
+│   ├── index.html \
+│   ├── manifest.json \
+│   └── robots.txt \
+├── src/ \
+│   ├── App.js \
+│   ├── App.test.js \ 
+│   ├── index.css \
+│   ├── index.js \
+│   ├── reportWebVitals.js \
+│   └── setupTests.js \
+└── .github/workflows \
+    └── frontend-cli.yaml \
 
 
 # Setup
