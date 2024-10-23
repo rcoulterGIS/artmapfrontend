@@ -361,33 +361,49 @@ const ArtMap = () => {
     };
   
     const getColor = (count) => {
-      // Color gradient from light blue to dark blue
       if (count === 1) return '#BBDEFB';
       if (count === 2) return '#64B5F6';
       if (count === 3) return '#2196F3';
       if (count === 4) return '#1976D2';
-      return '#0D47A1'; // 5 or more
+      return '#0D47A1';
     };
+  
+    // Group artworks by station location using station_id
+    const locationGroups = useMemo(() => {
+      const groups = new Map();
+  
+      Object.values(groupedArtworks).flat().forEach(artwork => {
+        if (!artwork.related_stations?.[0]) return;
+        
+        const stationId = artwork.related_stations[0].station_id;
+        if (!stationId) return;
+  
+        if (!groups.has(stationId)) {
+          groups.set(stationId, {
+            center: [artwork.latitude, artwork.longitude],
+            artworks: [],
+            stationId: stationId,
+            lines: artwork.related_stations[0].line
+          });
+        }
+  
+        const group = groups.get(stationId);
+        group.artworks.push(artwork);
+      });
+  
+      return Array.from(groups.values());
+    }, [groupedArtworks]);
   
     return (
       <>
-        {Object.entries(groupedArtworks).map(([stationName, stationArtworks]) => {
-          const center = stationArtworks.reduce(
-            (acc, artwork) => {
-              acc[0] += artwork.latitude;
-              acc[1] += artwork.longitude;
-              return acc;
-            },
-            [0, 0]
-          ).map(coord => coord / stationArtworks.length);
-  
-          const artworkCount = stationArtworks.length;
+        {locationGroups.map((group) => {
+          const artworkCount = group.artworks.length;
           const fillColor = getColor(artworkCount);
   
           return (
             <CircleMarker
-              key={stationName}
-              center={center}
+              key={group.stationId}
+              center={group.center}
               radius={10}
               fillColor={fillColor}
               color="#000"
@@ -395,11 +411,11 @@ const ArtMap = () => {
               opacity={1}
               fillOpacity={0.8}
               eventHandlers={{
-                click: () => handleMarkerClick(center),
+                click: () => handleMarkerClick(group.center),
               }}
             >
               <Popup>
-                <ArtworkPopup artworks={stationArtworks} />
+                <ArtworkPopup artworks={group.artworks} />
               </Popup>
             </CircleMarker>
           );
