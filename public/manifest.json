@@ -1,6 +1,6 @@
 {
-  "short_name": "NYC Transit Art Map",
-  "name": "NYC Transit Art Map",
+  "short_name": "NYC Subway Art Explorer",
+  "name": "NYC Subway Art Explorer",
   "icons": [
   ],
   "start_url": ".",
