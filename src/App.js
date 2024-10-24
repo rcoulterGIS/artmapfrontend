@@ -1,8 +1,10 @@
+// Import required libraries and components
 import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import styled, { createGlobalStyle } from 'styled-components';
 
+//Global stypes and popups
 const GlobalStyle = createGlobalStyle`
   .leaflet-popup-content-wrapper {
     width: 300px;
@@ -190,12 +192,14 @@ const ToggleButton = styled.button`
 `;
 
 const ArtMap = () => {
+  // state management
   const [artworks, setArtworks] = useState([]);
   const [subwayLines, setSubwayLines] = useState([]);
   const [error, setError] = useState(null);
   const [showSubwayLines, setShowSubwayLines] = useState(true);
   const [isLegendExpanded, setIsLegendExpanded] = useState(true);
 
+  // define subway line colors
   const subwayLineColors = {
     'A-C-E': '#0039A6',
     'B-D-F-M': '#FF6319',
@@ -208,7 +212,7 @@ const ArtMap = () => {
     '7': '#B933AD',
     'S': '#808183',
   };
-
+  // fetch data
   useEffect(() => {
     const fetchData = async () => {
       const apiUrl = process.env.REACT_APP_API_URL;
@@ -254,7 +258,7 @@ const ArtMap = () => {
       return acc;
     }, {});
   }, [artworks]);
-
+  //define popup for a single artwork popup
   const SingleArtworkContent = ({ artwork }) => (
     <StyledPopupContent>
       <h3>{artwork.art_title}</h3>
@@ -268,7 +272,7 @@ const ArtMap = () => {
       )}
     </StyledPopupContent>
   );
-
+  // define logic for grouped points
   const MultipleArtworkContent = ({ artworks }) => {
     const [selectedArtwork, setSelectedArtwork] = useState(null);
 
@@ -294,7 +298,7 @@ const ArtMap = () => {
         </StyledPopupContent>
       );
     }
-
+    // popup content for multiple artwork popups
     return (
       <StyledPopupContent>
         <h3>{artworks[0].station_name}</h3>
@@ -311,7 +315,7 @@ const ArtMap = () => {
       </StyledPopupContent>
     );
   };
-
+ // wrapper container
   const ArtworkPopup = ({ artworks }) => {
     if (artworks.length === 1) {
       return <SingleArtworkContent artwork={artworks[0]} />;
@@ -471,7 +475,7 @@ const ArtMap = () => {
   if (error) {
     return <div data-testid="error">Error: {error}</div>;
   }
-
+ // main render
   return (
     <>
       <GlobalStyle />
