@@ -1,5 +1,5 @@
 # NYC Subway Art Explorer Frontend
-This project is the frontend for the [NYC Subway Art Explorer](https://transitartmap.netlify.app/), a web application that visualizes artwork installations in New York City subway stations.
+This project is the frontend for the [NYC Subway Art Explorer](https://nycsubwayartexplorer.app/), a web application that visualizes artwork installations in New York City subway stations.
 
 This application runs using the [NYC Transit Art Explorer Backend](https://github.com/rcoulterGIS/artmapbackend). The backend can be deployed locally for testing purposes. See the repository for details. 
 
@@ -48,4 +48,4 @@ These two sources are merged by the backend application, and served as a single 
 The basemap is the [Voyager basemap](https://github.com/CartoDB/basemap-styles?tab=readme-ov-file) from Carto.
 
 ## CI/CD
-The production frontend of the application [https://transitartmap.netlify.app/](https://transitartmap.netlify.app/) is continuously integrated and deployed via Github Actions. Upon git push app.test.js is automatically run in a test environment hosted by Github. Upon successful completion of the tests, a pull request is generated from the netlify branch to trigger a build in [Netlify](https://www.netlify.com/), the Node.js cloud hosting platform selected for this project. For more information about GitHub Actions, click [here](https://github.com/features/actions), and for integrating Netlify deployments with your CI/CD pipelines, click [here](https://www.netlify.com/platform/core/build/).
+The production frontend of the application [https://nycsubwayartexplorer.app/](https://nycsubwayartexplorer.app/) is continuously integrated and deployed via Github Actions. Upon git push app.test.js is automatically run in a test environment hosted by Github. Upon successful completion of the tests, a pull request is generated from the netlify branch to trigger a build in [Netlify](https://www.netlify.com/), the Node.js cloud hosting platform selected for this project. For more information about GitHub Actions, click [here](https://github.com/features/actions), and for integrating Netlify deployments with your CI/CD pipelines, click [here](https://www.netlify.com/platform/core/build/).
